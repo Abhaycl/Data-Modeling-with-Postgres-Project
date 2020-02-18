@@ -18,7 +18,7 @@ Go to Desktop and open a terminal.
 
 For the execution of your own code, we head to the Project Workspace.
 
-To build the schema or to drop the tables and rebuild them.
+To build the schema or to drop the tables and rebuild them. Once the database is created, this fils executes the SQL queries in sql_queries.py to build tables in the schema.
 ```bash
   python create_tables.py
 ```
@@ -84,106 +84,3 @@ In our scenario, we have one dataset of songs where each file is in JSON format 
 Using the song and log datasets, the database schema looks like this:
 
 ![alt text][image1]
-
-For run **launch.sh** open a terminal:
-
-```bash
-  cd /home/workspace/catkin_ws/src/ShellScripts
-  ./launch.sh
-```
-
-![alt text][image1]
-![alt text][image2]
-
----
-
-For create **my world** open a terminal:
-
-```bash
-  cd /home/workspace/catkin_ws/src/World
-  gazebo MyWorld.world
-```
-
-Design your environment.
-
-* Open a terminal and launch Gazebo.
-* Click Edit and launch `Building Editor`.
-* Design a simple environment.
-* Apply textures or color.
-* Save the building editor environment and go back to Gazebo.
-* Save the Gazebo environment to the `World` directory under your `~/catkin_ws/src`.
-
-![alt text][image3]
-
----
-
-For run **test_slam.sh** open a terminal:
-
-```bash
-  cd /home/workspace/catkin_ws/src/ShellScripts
-  ./test_slam.sh
-```
-
-![alt text][image4]
-![alt text][image5]
-
----
-
-For run **wall_follower.sh** open a terminal:
-
-```bash
-  cd /home/workspace/catkin_ws/src/ShellScripts
-  ./wall_follower.sh
-```
-
-![alt text][image6]
-![alt text][image7]
-
----
-
-For run **test_navigation.sh** open a terminal:
-
-```bash
-  cd /home/workspace/catkin_ws/src/ShellScripts
-  ./test_navigation.sh
-```
-
-![alt text][image8]
-![alt text][image9]
-![alt text][image10]
-
----
-
-For run **pick_objects.sh** open a terminal:
-
-```bash
-  cd /home/workspace/catkin_ws/src/ShellScripts
-  ./pick_objects.sh
-```
-
-![alt text][image11]
-![alt text][image12]
-
----
-
-For run **add_markers.sh** open a terminal:
-
-```bash
-  cd /home/workspace/catkin_ws/src/ShellScripts
-  ./add_markers.sh
-```
-
-![alt text][image13]
-![alt text][image14]
-
----
-
-For run the project **home_service.sh** open a terminal:
-
-```bash
-  cd /home/workspace/catkin_ws/src/ShellScripts
-  ./home_service.sh
-```
-
-![alt text][image15]
-![alt text][image16]
