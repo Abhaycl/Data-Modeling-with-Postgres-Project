@@ -6,22 +6,7 @@ The objective of this project is to apply data modeling with Postgres and build 
 
 [//]: # (Image References)
 
-[image1]: ./images/HS_Launch1.jpg "./Launch.sh"
-[image2]: ./images/HS_Launch2.jpg "./Launch.sh"
-[image3]: ./misc_images/HS_Gazebo.jpg "gazebo MyWorld.world"
-[image4]: ./misc_images/HS_Test_Slam1.jpg "./test_slam.sh"
-[image5]: ./misc_images/HS_Test_Slam2.jpg "./test_slam.sh"
-[image6]: ./misc_images/HS_Wall_Follower1.jpg "./wall_follower.sh"
-[image7]: ./misc_images/HS_Wall_Follower2.jpg "./wall_follower.sh"
-[image8]: ./misc_images/HS_Test_Navigation1.jpg "./test_navigation.sh"
-[image9]: ./misc_images/HS_Test_Navigation2.jpg "./test_navigation.sh"
-[image10]: ./misc_images/HS_Test_Navigation3.jpg "./test_navigation.sh"
-[image11]: ./misc_images/HS_Pick_Objects1.jpg "./pick_objects.sh"
-[image12]: ./misc_images/HS_Pick_Objects2.jpg "./pick_objects.sh"
-[image13]: ./misc_images/HS_Add_Markers1.jpg "./add_markers.sh"
-[image14]: ./misc_images/HS_Add_Markers2.jpg "./add_markers.sh"
-[image15]: ./misc_images/HS_Home_Service1.jpg "./home_service.sh"
-[image16]: ./misc_images/HS_Home_Service2.jpg "./home_service.sh"
+[image1]: ./images/relaciones.jpg "Database Schema for Sparkify"
 
 
 ---
@@ -33,103 +18,19 @@ Go to Desktop and open a terminal.
 
 For the execution of your own code, we head to the Project Workspace.
 
+To build the schema or to drop the tables and rebuild them.
 ```bash
   python create_tables.py
 ```
 
-If you do not have an active workspace, you can create one. You can launch it by running the following commands first.
+To execute the ETL to load data into the tables.
 ```bash
-  cd /home/workspace/
-  mkdir -p catkin_ws/
+  python etl.py
 ```
 
-Clone the required repositories to the `/home/workspace/catkin_ws/` folder
+Some queries used to test the results of the ETL using:
 ```bash
-  cd /home/workspace/catkin_ws/
-  git clone https://github.com/Abhaycl/RoboND-Home-Service-Robot-2P5.git src
-```
-
-Clone the required repositories to the ~/catkin_ws/src folder. Note that this repository already includes official ROS packages compatible with this repository: [gmapping](https://github.com/ros-perception/slam_gmapping), [turtlebot_teleop](http://wiki.ros.org/turtlebot_teleop), [turtlebot_rviz_launchers](https://github.com/turtlebot/turtlebot_interactions), and [turtlebot_gazebo](https://github.com/turtlebot/turtlebot_simulator). Their dependencies must be installed to succesfully use this repository.
-
-(Optional)
-- https://github.com/turtlebot/turtlebot_apps.git
-* This repository contains the turtlebot_navigation package which is a turtlebot dependency.
-* This will give you some room to tweak navigation and some SLAM behaviors.
-
-Add required ROS packages as git submodules.
-```bash
-  cd ~/catkin_ws/src
-  git submodule add https://github.com/ros-perception/slam_gmapping.git
-  git submodule add https://github.com/turtlebot/turtlebot.git
-  git submodule add https://github.com/turtlebot/turtlebot_interactions.git
-  git submodule add https://github.com/turtlebot/turtlebot_simulator.git
-```
-
-Install ROS packages dependancies.
-```bash
-  cd ~/catkin_ws/src
-  sudo rosdep -i install gmapping -y
-  sudo rosdep -i install turtlebot_teleop -y
-  sudo rosdep -i install turtlebot_rviz_launchers -y
-  sudo rosdep -i install turtlebot_gazebo -y
-```
-
-Once copied everything, it's important to give permissions, reading and/or execution to the files necessary for the proper functioning.
-
-Build the project:
-```bash
-  cd /home/workspace/catkin_ws
-  catkin_make
-  source devel/setup.bash
-```
-
-#### Catkin Workspace Structure
-Should look something like this:
-```
-catkin_ws/src
-    |-- add_markers
-        |-- src
-        |-- ...
-    |-- misc_images
-        |-- ...
-    |-- pick_objects
-        |-- src
-        |-- ...
-    |-- RvizConfig
-        |-- ...
-    |-- ShellScripts
-        |-- ...
-    |-- slam_gmapping
-        |-- gmapping
-        |-- slam_gmapping
-        |-- ...
-    |-- turtlebot
-        |-- turtlebot
-        |-- turtlebot_bringup
-        |-- turtlebot_capabilities
-        |-- turtlebot_description
-        |-- turtlebot_teleop
-        |-- ...
-    |-- turtlebot_apps
-        |-- turtlebot_navigation
-        |-- ...
-    |-- turtlebot_interactions
-        |-- turtlebot_dashboard
-        |-- turtlebot_interactions
-        |-- turtlebot_interactive_markers
-        |-- turtlebot_rviz_launchers
-        |-- ...
-    |-- turtlebot_simulator
-        |-- turtlebot_gazebo
-        |-- turtlebot_simulator
-        |-- turtlebot_stage
-        |-- turtlebot_stdr
-        |-- ...
-    |-- wall_follower
-        |-- src
-        |-- ...
-    |-- World
-        |-- ...
+  test.ipynb
 ```
 
 
@@ -164,7 +65,11 @@ The summary of the files and folders within repo is provided in the table below:
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
 
 ---
-## Execution of the different shellscripts.
+## Scenario.
+
+A startup called Sparkify wants to analyze the data they've been collecting on songs and user activity on their new music streaming app. The analytics team is particularly interested in understanding what songs users are listening to. Currently, they don't have an easy way to query their data, which resides in a directory of JSON logs on user activity on the app, as well as a directory with JSON metadata on the songs in their app.
+
+They'd like a data engineer to create a Postgres database with tables designed to optimize queries on song play analysis, and bring you on the project. Your role is to create a database schema and ETL pipeline for this analysis. You'll be able to test your database and ETL pipeline by running queries given to you by the analytics team from Sparkify and compare your results with their expected results.
 
 For run **launch.sh** open a terminal:
 
