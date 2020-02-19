@@ -6,73 +6,74 @@ from sql_queries import *
 
 
 def process_song_file(cur, filepath):
-    # open song file
-    df = 
+    # Open song file
+    df = pd.read_json(filepath, lines = True)
 
-    # insert song record
-    song_data = 
+    # Insert song record
+    song_data = df.loc[:,["song_id", "title", "artist_id", "year", "duration"]].values[0].tolist()
     cur.execute(song_table_insert, song_data)
-    
-    # insert artist record
-    artist_data = 
-    cur.execute(artist_table_insert, artist_data)
+
+    # Insert artist record
+    artist_data = df.loc[:,["artist_id", "artist_name", "artist_location", "artist_latitude", "artist_longitude"]].values[0].tolist()
+    cur.execute(artist_table_insert, artist_data) 
 
 
 def process_log_file(cur, filepath):
-    # open log file
-    df = 
+    # Open log file
+    df = pd.read_json(filepath, lines = True)
 
-    # filter by NextSong action
-    df = 
+    # Filter by NextSong action
+    df = df[df.page == "NextSong"]
 
-    # convert timestamp column to datetime
-    t = 
-    
-    # insert time data records
-    time_data = 
-    column_labels = 
-    time_df = 
+    # Convert timestamp column to datetime
+    t = pd.to_datetime(df["ts"], unit = "ms")
+
+    # Insert time data records
+    time_data = (df["ts"].tolist(), t.dt.hour.values.tolist(), t.dt.day.values.tolist(), t.dt.week.values.tolist(), t.dt.month.values.tolist(), t.dt.year.values.tolist(), t.dt.weekday.values.tolist())
+    column_labels = ("timestamp", "hour", "day", "week", "month", "year", "weekday")
+    time_df = pd.DataFrame(list(time_data), index = list(column_labels)).transpose()
 
     for i, row in time_df.iterrows():
         cur.execute(time_table_insert, list(row))
 
-    # load user table
-    user_df = 
+    # Load user table
+    user_df = df.sort_values(by="ts", ascending = False).loc[:,["userId", "firstName", "lastName", "gender", "level"]].drop_duplicates("userId")
 
-    # insert user records
+    # Insert user records
     for i, row in user_df.iterrows():
         cur.execute(user_table_insert, row)
 
-    # insert songplay records
+    # Insert songplay records
     for index, row in df.iterrows():
-        
-        # get songid and artistid from song and artist tables
+
+        # Get songid and artistid from song and artist tables
         cur.execute(song_select, (row.song, row.artist, row.length))
         results = cur.fetchone()
-        
+
         if results:
             songid, artistid = results
         else:
             songid, artistid = None, None
 
-        # insert songplay record
-        songplay_data = 
-        cur.execute(songplay_table_insert, songplay_data)
+        # Insert songplay record
+        songplay_data = (df.ts[index].item(), int(df.userId[index]), df.level[index], songid, artistid, df.sessionId[index].item(), df.location[index], df.userAgent[index])
+        ##cur.execute(songplay_table_insert, songplay_data)
+        cur.execute(songplay_table_insert, songplay_data + songplay_data)
 
 
 def process_data(cur, conn, filepath, func):
-    # get all files matching extension from directory
+    # Get all files matching extension from directory
     all_files = []
     for root, dirs, files in os.walk(filepath):
         files = glob.glob(os.path.join(root,'*.json'))
         for f in files :
             all_files.append(os.path.abspath(f))
 
-    # get total number of files found
+    # Get total number of files found
     num_files = len(all_files)
     print('{} files found in {}'.format(num_files, filepath))
 
-    # iterate over files and process
+    # Iterate over files and process
     for i, datafile in enumerate(all_files, 1):
         func(cur, datafile)
         conn.commit()
