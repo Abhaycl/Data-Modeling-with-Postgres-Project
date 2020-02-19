@@ -52,7 +52,7 @@ The summary of the files and folders within repo is provided in the table below:
 | create_tables.py         | Drops and creates the tables. This file is to reset the tables before each time that run the ETL scripts.    |
 | etl.ipynb                | Reads and processes a single file from song_data and log_data and loads the data into the tables. This notebook contains detailed instructions on the ETL process for each of the tables. |
 | etl.py                   | Reads and processes files from song_data and log_data and loads them into the tables.                        |
-| sql_queries.py           | Contains all the sql queries, and is imported into the last three files above.                               |
+| sql_queries.py           | Containts the SQL queries to build the tables, to insert rows and a SELECT query to find song_id and artist_id based on the song name, artist name and song length. |
 |                          |                                                                                                              |
 | README.md                | Contains the project documentation.                                                                          |
 | README.pdf               | Contains the project documentation in PDF format.                                                            |
@@ -84,3 +84,11 @@ In our scenario, we have one dataset of songs where each file is in JSON format 
 Using the song and log datasets, the database schema looks like this:
 
 ![alt text][image1]
+
+#### Star Schema.
+
+A star schema is the simplest style of data mart schema. The star schema consists of one or more fact tables referencing to any number of dimension tables. It has some advantages like fast aggregation for analytics, simple queries for JOINs, etc.
+
+#### Facts Table.
+
+In data warehousing, a fact table consists of measurements, metrics or facts of a business process.
