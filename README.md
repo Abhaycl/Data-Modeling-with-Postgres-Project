@@ -14,29 +14,23 @@ The objective of this project is to apply data modeling with Postgres and build 
 
 #### How to run the program with your own code
 
-Go to Desktop and open a terminal.
-
 For the execution of your own code, we head to the Project Workspace.
 
-To build the schema or to drop the tables and rebuild them. Once the database is created, this fils executes the SQL queries in sql_queries.py to build tables in the schema.
+Running the create_tables.py script in a terminal creates and initializes the tables for the sparkifydb database. Another file sql_queries.py contains all SQL queries and is imported into create_tables.py.
 ```bash
   python create_tables.py
 ```
 
-To execute the ETL to load data into the tables.
+Running test.ipynb in a Jupyter notebook confirms that the tables were successfully created with the correct columns.
+
+Running etl.ipynb in a Jupyter notebook develops the ETL processes for each table and is used to prepare a python script for processing all the datasets.
+
+Running the etl.py script in a terminal to process the all the datasets. The script connects to the Sparkify database, extracts and processes the log_data and song_data, and loads data into the five tables. The file sql_queries.py contains all SQL queries and is imported into etl.py.
 ```bash
   python etl.py
 ```
 
-Implements the same script as etl.py, but on a single song file and log file.
-```bash
-  etl.ipynb
-```
-
-Some queries used to test the results of the ETL using:
-```bash
-  test.ipynb
-```
+Again, running test.ipynb confirms that the records were successfully inserted into each table.
 
 
 ---
@@ -93,6 +87,10 @@ A star schema is the simplest style of data mart schema. The star schema consist
 
 In data warehousing, a fact table consists of measurements, metrics or facts of a business process.
 
+## ETL Pipeline
+
+Extract, transform, load (ETL) is the general procedure of copying data from one or more sources into a destination system which represents the data differently from, or in a different context than, the sources.
+
 ## Data
 
 The data used in this project will be used for upcoming projects also. So, it is better to understand what it represents.
@@ -131,7 +129,7 @@ And below is an example of what the data in a log file, 2018-11-01-events.json, 
 {"artist":null,"auth":"Logged In","firstName":"Walter","gender":"M","itemInSession":0,"lastName":"Frye","length":null,"level":"free","location":"San Francisco-Oakland-Hayward, CA","method":"GET","page":"Home","registration":1540919166796.0,"sessionId":38,"song":null,"status":200,"ts":1541105830796,"userAgent":"\"Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/36.0.1985.143 Safari\/537.36\"","userId":"39"}
 ```
 
-#### Process song data (song_data directory)
+#### Process song data (song_data directory).
 
 We will perform ETL on the files in song_data directory to create two dimensional tables: songs table and artists table.
 
@@ -168,9 +166,76 @@ cur.execute(artist_table_insert, artist_data)
 conn.commit()
 ```
 
+Variables song_table_insert and artist_table_insert are SQL queries. These are given in sql_queries.py file.
+
+#### Process log data (log_data directory).
+
+We will perform ETL on the files in log_data directory to create the remaining two dimensional tables: time and users, as well as the songplays fact table.
+
+This is what a single log file looks like:
+
+```bash
+{"artist":null,"auth":"Logged In","firstName":"Walter","gender":"M","itemInSession":0,"lastName":"Frye","length":null,"level":"free","location":"San Francisco-Oakland-Hayward, CA","method":"GET","page":"Home","registration":1540919166796.0,"sessionId":38,"song":null,"status":200,"ts":1541105830796,"userAgent":"\"Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/36.0.1985.143 Safari\/537.36\"","userId":"39"}
+{"artist":null,"auth":"Logged In","firstName":"Kaylee","gender":"F","itemInSession":0,"lastName":"Summers","length":null,"level":"free","location":"Phoenix-Mesa-Scottsdale, AZ","method":"GET","page":"Home","registration":1540344794796.0,"sessionId":139,"song":null,"status":200,"ts":1541106106796,"userAgent":"\"Mozilla\/5.0 (Windows NT 6.1; WOW64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/35.0.1916.153 Safari\/537.36\"","userId":"8"}
+{"artist":"Des'ree","auth":"Logged In","firstName":"Kaylee","gender":"F","itemInSession":1,"lastName":"Summers","length":246.30812,"level":"free","location":"Phoenix-Mesa-Scottsdale, AZ","method":"PUT","page":"NextSong","registration":1540344794796.0,"sessionId":139,"song":"You Gotta Be","status":200,"ts":1541106106796,"userAgent":"\"Mozilla\/5.0 (Windows NT 6.1; WOW64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/35.0.1916.153 Safari\/537.36\"","userId":"8"}
+```
+
+For time table we have ts column in log files. We will parse it as a time stamp and use python’s datetime functions to create the remaining columns required for the table mentioned in the above schema.
+
+```bash
+    # Filter by NextSong action
+    df = df[df.page == "NextSong"]
+
+    # Convert timestamp column to datetime
+    t = pd.to_datetime(df["ts"], unit = "ms")
+
+    # Insert time data records
+    time_data = (df["ts"].tolist(), t.dt.hour.values.tolist(), t.dt.day.values.tolist(), t.dt.week.values.tolist(), t.dt.month.values.tolist(), t.dt.year.values.tolist(), t.dt.weekday.values.tolist())
+    column_labels = ("timestamp", "hour", "day", "week", "month", "year", "weekday")
+    time_df = pd.DataFrame(list(time_data), index = list(column_labels)).transpose()
+```
+
+For users table, we’ll extract the appropriate columns from log files as mentioned in the star schema above for users table.
+
+```bash
+    # Load user table
+    user_df = df.sort_values(by="ts", ascending = False).loc[:,["userId", "firstName", "lastName", "gender", "level"]].drop_duplicates("userId")
+```
+
+For songplays table, we will require information from songs table, artists table and the original log files. Since the log files do not have song_id and artist_id, we need to use songs table and artists table for that. The song_select query finds the song_id and artist_id based on the title, artist_name, and duration of a song. For the remaining columns, we can select them from the log files.
+
+```bash
+    # Insert songplay records
+    for index, row in df.iterrows():
+
+        # Get songid and artistid from song and artist tables
+        cur.execute(song_select, (row.song, row.artist, row.length))
+        results = cur.fetchone()
+
+        if results:
+            songid, artistid = results
+        else:
+            songid, artistid = None, None
+
+        # Insert songplay record
+        songplay_data = (df.ts[index].item(), int(df.userId[index]), df.level[index], songid, artistid, df.sessionId[index].item(), df.location[index], df.userAgent[index])
+        ##cur.execute(songplay_table_insert, songplay_data)
+        cur.execute(songplay_table_insert, songplay_data + songplay_data)
+```
+
+Now insert the data into their respective tables.
+
+```bash
+    # Insert into time table
+    for i, row in time_df.iterrows():
+        cur.execute(time_table_insert, list(row))
+
+    # Insert user records
+    for i, row in user_df.iterrows():
+        cur.execute(user_table_insert, row)
+```
+
 
 ## Conclusion.
 
 We created a Postgres database with the facts and dimension table for song_play analysis. We populated it with the entries from songs and events directory. Now our data is useful for some basic aggregation and analytics.
-
-
